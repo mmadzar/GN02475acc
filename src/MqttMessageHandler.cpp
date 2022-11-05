@@ -7,11 +7,11 @@ MqttMessageHandler::MqttMessageHandler()
 {
 }
 
-void MqttMessageHandler::HandleMessage(const char *command, const char *message)
+void MqttMessageHandler::HandleMessage(const char *command, const char *message, int length)
 {
-  if (command == "vacuum_min")
+  if (strcmp(command, "vacuum_min") == 0)
     brakesSettings.vacuum_min = String(message).toInt();
-  else if (command == "vacuum_max")
+  else if (strcmp(command, "vacuum_max") == 0)
     brakesSettings.vacuum_max = String(message).toInt();
   else
   {
@@ -19,7 +19,7 @@ void MqttMessageHandler::HandleMessage(const char *command, const char *message)
     {
       SwitchConfig *sc = &pinsSettings.switches[i];
       // find switch in settings and set status value by index
-      if (String(sc->name).equals(command))
+      if (strcmp(sc->name, command) == 0)
       {
         status.switches[i] = String(message).toInt();
         break;

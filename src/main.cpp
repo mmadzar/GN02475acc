@@ -8,6 +8,7 @@
 #include "shared/Bytes2WiFi.h"
 #include "Sensors.h"
 #include "Switches.h"
+#include "CanBus.h"
 
 Status status;
 PinsSettings pins;
@@ -19,6 +20,7 @@ MqttPubSub mqtt;
 Switches pwmCtrl;
 Sensors sensors;
 Bytes2WiFi bytesWiFi;
+CanBus can;
 
 long loops = 0;
 long lastLoopReport = 0;
@@ -41,6 +43,7 @@ void setup()
   wota.setupOTA();
   mqtt.setup();
   bytesWiFi.setup();
+  can.setup(mqtt, bytesWiFi);
 }
 
 void loop()
@@ -53,15 +56,13 @@ void loop()
     Serial.println(loops);
     status.loops = loops;
     loops = 0;
-    // refresh monitor values
-    status.freeMem = esp_get_free_heap_size();
-    status.minFreeMem = esp_get_minimum_free_heap_size();
   }
   else
   {
     loops++;
   }
-
+  
+  can.handle();
   sensors.handle();
   pwmCtrl.handle();
 

@@ -7,6 +7,10 @@
 class Status : public StatusBase
 {
 public:
+  int rpm = 600; // minimum value to keep DSC working
+  int coolant_temp = 90;
+  int ikeFuelLevel = -1;
+  
   int sensors[SensorCount];
   int switches[SwitchCount]{
       -1, -1, -1, -1, -1, -1, -1, -1};
