@@ -4,7 +4,6 @@
 #include "appconfig.h"
 #include "status.h"
 #include "shared/MqttPubSub.h"
-// #include <ArduinoOTA.h>
 #include <string.h>
 #include "shared/Bytes2WiFi.h"
 #include "Sensors.h"

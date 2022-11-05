@@ -11,8 +11,9 @@ class StatusBase
 public:
     struct tm timeinfo;
 
-    char upsince[30];
-    char connectedsince[25];
+    char upsince[29];
+    char connectedsince[29];
+    char currenttime[29];
     long connectCount = 0;
     long loops = 0;
     long missedSend = 0;

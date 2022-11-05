@@ -163,9 +163,9 @@ void WiFiOTA::WiFiEvent(WiFiEvent_t event)
     if (!startedTimeUpdated)
     {
       startedTimeUpdated = true;
-      strftime(status.upsince, sizeof(status.upsince), "%Y-%m-%d %H:%M:%S", &(status.timeinfo));
+      strftime(status.upsince, sizeof(status.upsince), "%Y-%m-%d %H:%M:%S UTC", &(status.timeinfo));
     }
-    strftime(status.connectedsince, sizeof(status.connectedsince), "%Y-%m-%d %H:%M:%S", &(status.timeinfo));
+    strftime(status.connectedsince, sizeof(status.connectedsince), "%Y-%m-%d %H:%M:%S UTC", &(status.timeinfo));
     break;
   case SYSTEM_EVENT_STA_LOST_IP:
     Serial.println("Lost IP address and IP address is reset to 0");
