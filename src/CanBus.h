@@ -18,9 +18,6 @@ private:
   void init();
   CAN_device_t CAN_cfg;    // CAN Config
   long previousMillis = 0; // will store last time a CAN Message was send
-  long handle521(CAN_FRAME frame);
-  long handle522(CAN_FRAME frame);
-  long handle525(CAN_FRAME frame);
   int handle613(CAN_FRAME frame);
 
 public:

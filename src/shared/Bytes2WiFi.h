@@ -2,7 +2,7 @@
 #define BYTES2WIFI_H_
 
 #define SERIAL_TCP_PORT 23
-#define MAX_NMEA_CLIENTS 1
+#define MAX_NMEA_CLIENTS 2
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include "../src/status.h"

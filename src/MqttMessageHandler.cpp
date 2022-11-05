@@ -9,7 +9,11 @@ MqttMessageHandler::MqttMessageHandler()
 
 void MqttMessageHandler::HandleMessage(const char *command, const char *message, int length)
 {
-  if (strcmp(command, "vacuum_min") == 0)
+  if (strcmp(command, "coolant_temp") == 0)
+    status.coolant_temp = String(message).toInt();
+  else if (strcmp(command, "rpm") == 0)
+    status.rpm = String(message).toInt();
+  else if (strcmp(command, "vacuum_min") == 0)
     brakesSettings.vacuum_min = String(message).toInt();
   else if (strcmp(command, "vacuum_max") == 0)
     brakesSettings.vacuum_max = String(message).toInt();

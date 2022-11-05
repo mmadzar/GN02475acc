@@ -20,7 +20,7 @@ void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)
 {
   mqttClientCan = &mqtt_client;
   b2w = &wifiport;
-  
+
   CAN0.begin(500000);
   CAN0.watchFor(0x521);
   CAN0.watchFor(0x522);
@@ -87,15 +87,6 @@ void CanBus::handle()
 
     switch (frame.id)
     {
-      // ISA IVT Shunt codes
-    case 0x521:
-      handle521(frame);
-      break;
-    case 0x522:
-      handle522(frame);
-      break;
-    case 0x525:
-      handle525(frame);
     case 0x613:
       handle613(frame);
       break;

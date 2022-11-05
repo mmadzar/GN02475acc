@@ -34,6 +34,8 @@ enum class devicet
     adc_motor2,
     adc_heater1,
     adc_heater2,
+    adc_voltage,
+    reverse_light
 };
 
 #endif
