@@ -22,18 +22,16 @@ void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)
   b2w = &wifiport;
 
   CAN0.begin(500000);
-  CAN0.watchFor(0x521);
-  CAN0.watchFor(0x522);
-  CAN0.watchFor(0x525);
-  // BMW IKE
-  CAN0.watchFor(0x613);
-  // BMW DSC
-  CAN0.watchFor(0x153); // speed  km/h
-  CAN0.watchFor(0x1F0); // wheel speed km/h
-  // // loopback
-  // CAN0.watchFor(0x545);
-  // CAN0.watchFor(0x316);
-  // CAN0.watchFor(0x329);
+  CAN0.watchFor(); //watch all - performance OK until connected clients!
+  // // BMW IKE
+  // CAN0.watchFor(0x613);
+  // // BMW DSC
+  // CAN0.watchFor(0x153); // speed  km/h
+  // CAN0.watchFor(0x1F0); // wheel speed km/h
+
+  // // CAN0.watchFor(0x545);
+  // // CAN0.watchFor(0x316);
+  // // CAN0.watchFor(0x329);
 
   // init frames for sending
   CAN_FRAME txFrame;
