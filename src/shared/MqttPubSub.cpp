@@ -36,22 +36,25 @@ void MqttPubSub::callback(char *topic, byte *message, unsigned int length)
     else if (cmd == "reconnect" && String(msg).toInt() == 1)
       WiFi.disconnect(false, false);
     else
+    {
       mqttMessageHandler.HandleMessage(cmd.c_str(), msg, length + 1);
+      mqttMessageHandler.callback(topic, message, length);
+    }
 
-    status.receivedCount++;
+    // status.receivedCount++;
   }
 }
 
 bool MqttPubSub::reconnect()
 {
-  if (status.SSID != "")
+  if (strcmp(status.SSID, "") != 0)
   {
-    if (status.SSID != String(currentMqttConfig.ssid))
+    if (strcmp(status.SSID, currentMqttConfig.ssid) != 0)
     {
       // reset current MQTT configuration
       for (int i = 0; i < AP_COUNT; i++)
       {
-        if (strcmp(status.SSID.c_str(), SETTINGS.APlist[i].ssid) == 0)
+        if (strcmp(status.SSID, SETTINGS.APlist[i].ssid) == 0)
         {
           memcpy((void *)&currentMqttConfig, (void *)&SETTINGS.APlist[i], sizeof(currentMqttConfig));
           if (strcmp(currentMqttConfig.mqtt.server, "gateway") == 0)
@@ -68,10 +71,13 @@ bool MqttPubSub::reconnect()
       client.setServer(currentMqttConfig.mqtt.server, currentMqttConfig.mqtt.port);
       if (connect(HOST_NAME, currentMqttConfig.mqtt.username, currentMqttConfig.mqtt.password))
       {
-        Serial.println("Connected to MQTT.");
         client.subscribe(channelIn);
         Serial.print("Listening: ");
         Serial.println(channelIn);
+
+        // subscribe to extra channels
+        // client.subscribe("#");
+
         digitalWrite(pinsSettings.led, LOW);
         publishStatus(false);
       }
@@ -110,10 +116,10 @@ void MqttPubSub::publishStatus(bool waitForInterval) // TODO pass additional sta
 
 void MqttPubSub::handle()
 {
-  if (status.SSID == "")
+  if (strcmp(status.SSID, "") == 0)
     lastReconnectAttempt = -10000; // reconnects as soon as connected to WiFi
 
-  if (status.SSID != "")
+  if (strcmp(status.SSID, "") != 0)
   {
     if (!client.connected())
     {
@@ -128,7 +134,7 @@ void MqttPubSub::handle()
         if (reconnect())
         {
           lastReconnectAttempt = -10000;
-          Serial.print("mqtt connected."); // Expired waiting on inactive connection...");
+          Serial.println("mqtt connected."); // Expired waiting on inactive connection...");
         }
       }
     }
@@ -138,6 +144,8 @@ void MqttPubSub::handle()
       client.loop();
     }
   }
+
+  mqttMessageHandler.handle();
 }
 
 void MqttPubSub::sendMessage(String message, String channel)

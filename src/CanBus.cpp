@@ -22,7 +22,7 @@ void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)
   b2w = &wifiport;
 
   CAN0.begin(500000);
-  CAN0.watchFor(); //watch all - performance OK until connected clients!
+  CAN0.watchFor(); // watch all - performance OK until connected clients!
   // // BMW IKE
   // CAN0.watchFor(0x613);
   // // BMW DSC
@@ -81,8 +81,6 @@ void CanBus::handle()
   CAN_FRAME frame;
   if (CAN0.read(frame))
   {
-    // status.receivedCount++;
-
     switch (frame.id)
     {
     case 0x613:

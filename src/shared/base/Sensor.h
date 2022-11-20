@@ -29,7 +29,7 @@ private:
     double calculateVoltage(int adc_value);
 
     long tempValues;
-    const int sumValuesCount = 100; // number of samples to collect before sending average 1k = 11687 missedIntervals, 50 = 13583 missedIntervals
+    const int sumValuesCount = 50; // number of samples to collect before sending average 1k = 11687 missedIntervals, 50 = 13583 missedIntervals
     int minValue = 5000;             // minimum value read in samples collected - expected highest value 4096
     int maxValue = 0;                // minimum value read in samples collected
     int samplesCollected = 0;

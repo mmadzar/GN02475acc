@@ -2,17 +2,15 @@
 
 #include "Bytes2WiFi.h"
 
-WiFiServer serverWiFi(SERIAL_TCP_PORT);
-WiFiClient TCPClient[MAX_NMEA_CLIENTS];
 static IPAddress broadcastAddr(255, 255, 255, 255);
 
 Bytes2WiFi::Bytes2WiFi()
 {
 }
 
-void Bytes2WiFi::setup()
+void Bytes2WiFi::setup(uint16_t port)
 {
-    serverWiFi.begin(); // start TCP server
+    serverWiFi.begin(port); // start TCP server
     serverWiFi.setNoDelay(true);
 }
 
@@ -20,6 +18,7 @@ void Bytes2WiFi::addBuffer(byte b)
 {
     if (position > BUFFER_SIZE - 1)
     {
+        send();
         position = 0;
     }
     content[position++] = b;
@@ -107,36 +106,55 @@ void Bytes2WiFi::read()
             String((char *)wifiCommand).toCharArray(cmd, wifiCmdPos + 1);
             if (wifiCmdPos > 1)
             {
-                Serial.println(cmd);
-                // execute command
+                // Serial.println(cmd);
+                //  execute command
                 if (strcmp(cmd, "ping") == 0)
                 {
                     addBuffer("pong", 4);
+                    wifiCmdPos = 0;
+                }
+                else if (strcmp(cmd, "status") == 0)
+                {
+                    char wbuffer[1024];
+                    serializeJson(status.GenerateJson(), wbuffer);
+                    String st(wbuffer);
+                    addBuffer(st.c_str(), st.length());
+                    wifiCmdPos = 0;
                 }
                 else if (strcmp(cmd, "restart") == 0)
                 {
                     ESP.restart();
+                    wifiCmdPos = 0;
                 }
                 else if (strcmp(cmd, "reconnect") == 0)
                 {
                     WiFi.disconnect(false, false);
+                    wifiCmdPos = 0;
                 }
-
-                wifiCmdPos = 0;
             }
-            else
-                wifiCmdPos = 0;
+            // else
+            // reset command if not known
+            wifiCmdPos = 0;
         }
     }
 }
 
 void Bytes2WiFi::handle()
 {
-    if (status.SSID != "")
+    if (strcmp(status.SSID, "") != 0)
     {
-        read();
-        if (position > 0)
-            send();
+        lastReadCount++;
+        if (lastReadCount > 10) // read command every 10th cycle to improve loop performance alot
+        {
+            lastReadCount = 0;
+            read();
+        }
+        if (status.currentMillis - lastSend > 1000) // empty buffer every second
+            if (position > 0)
+            {
+                lastSend = status.currentMillis;
+                send();
+            }
 
         if ((status.currentMillis - lastBroadcast) > 1000) // every second send out a broadcast ping
         {

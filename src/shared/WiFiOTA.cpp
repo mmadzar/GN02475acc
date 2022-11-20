@@ -7,6 +7,7 @@
 
 char *buff = new char[20];
 char *buff2 = new char[20];
+char *buff3 = new char[20];
 IPAddress ipA;
 IPAddress ipAG;
 bool connecting = false;
@@ -18,7 +19,7 @@ WiFiOTA::WiFiOTA()
 
 void WiFiOTA::setupWiFi()
 {
-  //esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B); // to get best signal
+  // esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B); // to get best signal
   SETTINGS.loadSettings();
   esp_wifi_set_storage(WIFI_STORAGE_RAM);
   Serial.println("WiFi setup... ");
@@ -126,8 +127,8 @@ void WiFiOTA::WiFiEvent(WiFiEvent_t event)
     break;
   case SYSTEM_EVENT_STA_START:
     Serial.println("WiFi client started");
-    break;
   case SYSTEM_EVENT_STA_STOP:
+    break;
     Serial.println("WiFi clients stopped");
     break;
   case SYSTEM_EVENT_STA_CONNECTED:
@@ -138,7 +139,8 @@ void WiFiOTA::WiFiEvent(WiFiEvent_t event)
     digitalWrite(pinsSettings.led, HIGH);
     status.ipAddress = "none";
     status.gatewayAddress = "255.255.255.255";
-    status.SSID = "";
+    sprintf(buff3, "");
+    status.SSID = buff3;
     connecting = false;
     break;
   case SYSTEM_EVENT_STA_AUTHMODE_CHANGE:
@@ -154,7 +156,8 @@ void WiFiOTA::WiFiEvent(WiFiEvent_t event)
     sprintf(buff2, "%d.%d.%d.%d", ipAG[0], ipAG[1], ipAG[2], ipAG[3]);
     status.gatewayAddress = buff2;
     Serial.printf("IP: %s  GW: %s\n", status.ipAddress, status.gatewayAddress);
-    status.SSID = WiFi.SSID();
+    sprintf(buff3, "%S", WiFi.SSID());
+    status.SSID = buff3;
     digitalWrite(pinsSettings.led, LOW);
     Serial.printf("SSID: %s  RSSI: %d\n", status.SSID, WiFi.RSSI());
 

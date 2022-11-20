@@ -31,3 +31,12 @@ void MqttMessageHandler::HandleMessage(const char *command, const char *message,
     }
   }
 }
+
+void MqttMessageHandler::callback(char *topic, byte *message, unsigned int length)
+{
+
+}
+
+void MqttMessageHandler::handle()
+{
+}
