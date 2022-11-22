@@ -15,6 +15,8 @@ bool startedTimeUpdated = false;
 
 WiFiOTA::WiFiOTA()
 {
+    sprintf(buff3, "");
+    status.SSID = buff3;
 }
 
 void WiFiOTA::setupWiFi()

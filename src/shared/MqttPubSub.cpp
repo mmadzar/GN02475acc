@@ -58,7 +58,7 @@ bool MqttPubSub::reconnect()
         {
           memcpy((void *)&currentMqttConfig, (void *)&SETTINGS.APlist[i], sizeof(currentMqttConfig));
           if (strcmp(currentMqttConfig.mqtt.server, "gateway") == 0)
-            currentMqttConfig.mqtt.server = strdup(status.gatewayAddress);
+            strcpy(currentMqttConfig.mqtt.server, status.gatewayAddress);
           break;
         }
       }
