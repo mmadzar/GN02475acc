@@ -70,7 +70,7 @@ void loop()
 
   wota.handleWiFi();
   wota.handleOTA();
-  if (loops % 10 == 0) // check mqtt every 10th cycle
+  if (loops % 5 == 0) // check mqtt every 5th cycle
     mqtt.handle();
 
   bytesWiFi.handle();

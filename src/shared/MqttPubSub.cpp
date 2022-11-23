@@ -72,6 +72,7 @@ bool MqttPubSub::reconnect()
       if (connect(HOST_NAME, currentMqttConfig.mqtt.username, currentMqttConfig.mqtt.password))
       {
         client.subscribe(channelIn);
+        client.subscribe("GN02475inv/out/#"); //subscribe to inverter messages
         Serial.print("Listening: ");
         Serial.println(channelIn);
 
