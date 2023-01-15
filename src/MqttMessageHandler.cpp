@@ -21,7 +21,7 @@ void MqttMessageHandler::HandleMessage(const char *command, const char *message,
   {
     for (size_t i = 0; i < SwitchCount; i++)
     {
-      SwitchConfig *sc = &pinsSettings.switches[i];
+      SwitchConfig *sc = &settings.switches[i];
       // find switch in settings and set status value by index
       if (strcmp(sc->name, command) == 0)
       {

@@ -14,7 +14,7 @@ class CanBus
 {
 private:
   Bytes2WiFi *b2w;
-  PinsSettings pinsSettings;
+  Settings settings;
   void init();
   CAN_device_t CAN_cfg;    // CAN Config
   long previousMillis = 0; // will store last time a CAN Message was send

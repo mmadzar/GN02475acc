@@ -1,7 +1,7 @@
 #ifndef APPCONFIG_H_
 #define APPCONFIG_H_
 
-#define HOST_NAME "GN02475acc"
+#define HOST_NAME "GN02475accTTT"
 
 #include "../../secrets.h"
 #include <stdint.h>
@@ -9,8 +9,11 @@
 #include <driver/gpio.h>
 #include "shared/configtypes/configtypes.h"
 
-struct PinsSettings
+struct Settings
 {
+#define ListenChannelsCount 1
+  const char *listenChannels[ListenChannelsCount] = {"GN02475inv/out/#"};
+
   const gpio_num_t led = (gpio_num_t)2;      // status led
   const gpio_num_t can0_rx = (gpio_num_t)32; // can0 transciever rx line
   const gpio_num_t can0_tx = (gpio_num_t)22; // can0 transciever tx line
@@ -75,7 +78,7 @@ struct BrakesSettings
   uint16_t vacuum_max = 1350; // ADC value - turn pump off cca 1.4V
 };
 
-extern PinsSettings pinsSettings;
+extern Settings settings;
 extern Intervals intervals;
 extern BrakesSettings brakesSettings;
 

@@ -1,7 +1,7 @@
 #include "Switches.h"
 
 MqttPubSub *mqttClientSwitches;
-PinsSettings pinsSettings;
+Settings settings;
 
 Switches::Switches()
 {
@@ -13,7 +13,7 @@ void Switches::setup(MqttPubSub &mqtt_client)
   mqttClientSwitches = &mqtt_client;
   for (size_t i = 0; i < SwitchCount; i++)
   {
-    SwitchConfig *sc = &pinsSettings.switches[i];
+    SwitchConfig *sc = &settings.switches[i];
     configs[i] = new SwitchConfig(sc->device, sc->name, sc->pin, sc->channel, sc->switchtype);
     devices[i] = new Switch(i, *configs[i]);
     devices[i]->onChange([](const char *name, devicet devicetype, int value)

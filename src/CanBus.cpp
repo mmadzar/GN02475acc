@@ -13,7 +13,7 @@ CanBus::CanBus()
 
 void CanBus::init()
 {
-  CAN0.setCANPins(pinsSettings.can0_rx, pinsSettings.can0_tx);
+  CAN0.setCANPins(settings.can0_rx, settings.can0_tx);
 }
 
 void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)

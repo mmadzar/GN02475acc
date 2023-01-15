@@ -11,7 +11,7 @@
 #include "CanBus.h"
 
 Status status;
-PinsSettings pins;
+Settings pins;
 Intervals intervals;
 WiFiSettings wifiSettings;
 BrakesSettings brakesSettings;
@@ -35,7 +35,7 @@ void setup()
   SETTINGS.loadSettings();
   pwmCtrl.setup(mqtt);
   sensors.setup(mqtt);
-  pinMode(pinsSettings.led, OUTPUT);
+  pinMode(pins.led, OUTPUT);
   Serial.begin(115200);
   // delay(500);
   Serial.println("Serial started!");

@@ -31,11 +31,11 @@ public:
 
     JsonObject jsensors = root.createNestedObject("sensors");
     for (size_t i = 0; i < SensorCount; i++)
-      jsensors[pinsSettings.sensors[i].name] = sensors[i];
+      jsensors[settings.sensors[i].name] = sensors[i];
 
     JsonObject jswitches = root.createNestedObject("switches");
     for (size_t i = 0; i < SwitchCount; i++)
-      jswitches[pinsSettings.switches[i].name] = switches[i];
+      jswitches[settings.switches[i].name] = switches[i];
 
     return root;
   }

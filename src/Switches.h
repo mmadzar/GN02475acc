@@ -20,7 +20,7 @@ public:
   void handle();
 
 private:
-  PinsSettings pinsSettings;
+  Settings settings;
   Switch *devices[SwitchCount];
   SwitchConfig *configs[SwitchCount];
 };
