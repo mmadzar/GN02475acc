@@ -44,12 +44,10 @@ void MqttMessageHandler::callback(char *topic, byte *message, unsigned int lengt
   if (length > 0)
   {
     if (cmd.equals("inverter/rpm"))
-    {
-      //status.rpm = String((const char *)message).toInt();
-    }
-    else if (cmd.equals("inverter/pot")) // for testing responsivnes
       status.rpm = String((const char *)message).toInt();
-    //Serial.println(cmd);
+    // else if (cmd.equals("inverter/pot")) // for testing responsivnes
+    //   status.rpm = String((const char *)message).toInt();
+    // Serial.println(cmd);
   }
 }
 
