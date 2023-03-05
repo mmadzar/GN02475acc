@@ -25,13 +25,16 @@ void Sensors::setup(class MqttPubSub &mqtt_client)
                            {
                             case devicet::adc_vacuum:
                               status.sensors[settingsSensors.getSensorIndex(devicetype)]=value;
-                                if (value < brakesSettings.vacuum_max) // turn pump off
+                                if (brakesSettings.manual_vacuum == 0)
                                 {
-                                  status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=LOW;
-                                }
-                                else if (value > brakesSettings.vacuum_min) // turn pump on
-                                {
-                                  status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=HIGH;
+                                  if (value < brakesSettings.vacuum_max) // turn pump off
+                                  {
+                                    status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=LOW;
+                                  }
+                                  else if (value > brakesSettings.vacuum_min) // turn pump on
+                                  {
+                                    status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=HIGH;
+                                  }
                                 }
                               break;
                             default:
