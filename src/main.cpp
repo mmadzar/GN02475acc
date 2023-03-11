@@ -49,12 +49,12 @@ void setup()
 void loop()
 {
   status.currentMillis = millis();
-  status.loops = loops;
   if (status.currentMillis - lastLoopReport > 1000) // number of loops in 1 second - for performance measurement
   {
     lastLoopReport = status.currentMillis;
     Serial.print("Loops in a second: ");
     Serial.println(loops);
+    status.loops = loops;
     loops = 0;
   }
   else

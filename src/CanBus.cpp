@@ -1,6 +1,7 @@
 #include "CanBus.h"
 
 StaticJsonDocument<512> docJ;
+char tempBufferCan[512];
 CAN_FRAME frames[5];
 long displayValue = 0;
 int consumptionCounter = 0; // 0 - 65535(0xFFFF)
@@ -120,18 +121,21 @@ void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)
     CollectorConfig *sc = &settings.collectors[i];
     configs[i] = new CollectorConfig(sc->name, sc->sendRate);
     collectors[i] = new Collector(*configs[i]);
-    collectors[i]->onChange([](const char *name, int value, int min, int max, int samplesCollected, char *timestamp)
+    collectors[i]->onChange([](const char *name, int value, int min, int max, int samplesCollected, uint64_t timestamp)
                             { 
                               status.collectors[settingsCollectors.getCollectorIndex(name)]=value;
-                              mqttClientCan->sendMessage(String(value), String(wifiSettings.hostname) + "/out/collectors/" + name); 
-                              mqttClientCan->sendMessage(String(min), String(wifiSettings.hostname) + "/out/collectors/" + name + "/min");
-                              mqttClientCan->sendMessage(String(max), String(wifiSettings.hostname) + "/out/collectors/" + name + "/max");
-                              mqttClientCan->sendMessage(String(samplesCollected), String(wifiSettings.hostname) + "/out/collectors/" + name + "/samplesCollected");                               
-                              });
+                              JsonObject root = docJ.to<JsonObject>();
+                              root["value"]=value;
+                              root["min"]=min;
+                              root["max"]=max;
+                              root["timestamp"]=timestamp;
+                              root["samples"]=samplesCollected;
+
+                              serializeJson(docJ, tempBufferCan);
+                              mqttClientCan->sendMessageToTopic(String(wifiSettings.hostname) + "/out/collectors/" + name, tempBufferCan); });
     collectors[i]->setup();
   }
 }
-
 void CanBus::handle()
 {
   CAN_FRAME frame;
@@ -150,7 +154,7 @@ void CanBus::handle()
     // store message to buffer
     b2w->addBuffer(0xf1);
     b2w->addBuffer(0x00); // 0 = canbus frame sending
-    uint32_t now = micros();
+    uint64_t now = status.getTimestampMicro();
     b2w->addBuffer(now & 0xFF);
     b2w->addBuffer(now >> 8);
     b2w->addBuffer(now >> 16);
@@ -177,34 +181,17 @@ int CanBus::handle613(CAN_FRAME frame)
   const int v = (int)(frame.data.bytes[2]);
   if (status.ikeFuelLevel != v)
   {
-    mqttClientCan->sendMessage(String(v), String(wifiSettings.hostname) + "/out/IKE/fuel_level");
+    mqttClientCan->sendMessageToTopic(String(v), (String(wifiSettings.hostname) + "/out/IKE/fuel_level"));
     status.ikeFuelLevel = v;
   }
   return status.ikeFuelLevel;
-}
-
-void getTimestamp(char *buffer)
-{
-  if (strcmp(status.SSID, "") == 0 || !getLocalTime(&(status.timeinfo), 10))
-    sprintf(buffer, "INVALID TIME               ");
-  else
-  {
-    long microsec = 0;
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    microsec = tv.tv_usec;
-    strftime(buffer, 29, "%Y-%m-%d %H:%M:%S", &(status.timeinfo));
-    sprintf(buffer, "%s.%06d", buffer, microsec);
-  }
 }
 
 long CanBus::handleOBCDCFrame(CAN_FRAME frame)
 {
   if (frame.id == 0x377 || frame.id == 0x389 || frame.id == 0x38a)
   {
-    char ts[29];
-    getTimestamp(ts);
+    uint64_t ts = status.getTimestampMicro();
     switch (frame.id)
     {
     case 0x377:
@@ -262,7 +249,7 @@ void CanBus::sendMessageSet()
 
     CAN0.sendFrame(frames[3]);
   }
-  
+
   if (status.chargerStarted == 1 && status.currentMillis - previousMillis800 >= 500)
   {
     previousMillis800 = status.currentMillis;

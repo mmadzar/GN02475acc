@@ -45,7 +45,7 @@ void Sensors::setup(class MqttPubSub &mqtt_client)
                                   status.sensors[si]=value/100.0;
                               break;
                            }
-                          mqttClientSensors->sendMessage(String(value), String(wifiSettings.hostname) + "/out/sensors/" + name); });
+                          mqttClientSensors->sendMessageToTopic(String(value), String(wifiSettings.hostname) + "/out/sensors/" + name); });
     devices[i]->setup();
   }
 }
