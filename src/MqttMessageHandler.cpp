@@ -3,6 +3,8 @@
 #include "status.h"
 #include "MqttMessageHandler.h"
 
+static StaticJsonDocument<1024> mhdoc;
+
 MqttMessageHandler::MqttMessageHandler()
 {
 }
@@ -47,14 +49,17 @@ void MqttMessageHandler::callback(char *topic, byte *message, unsigned int lengt
   char msg[length + 1];
   for (size_t i = 0; i < length; i++)
     msg[i] = (char)message[i];
-  msg[length] = 0x0a; 
+  msg[length] = 0x0a;
 
   String t = String(topic);
   String cmd = t.substring(String("GN02475inv/out/").length(), t.length());
   if (length > 0)
   {
-    if (cmd.equals("inverter/rpm"))
-      status.rpm = String((const char *)message).toInt();
+    if (cmd.equals("collectors/rpm"))
+    {
+      deserializeJson(mhdoc, message);
+      status.rpm = mhdoc["max"];
+    }
     if (status.rpm < 600)
       status.rpm = 600;
     // else if (cmd.equals("inverter/pot")) // for testing responsivnes

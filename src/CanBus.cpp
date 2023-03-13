@@ -146,6 +146,9 @@ void CanBus::handle()
     case 0x613:
       handle613(frame);
       break;
+    case 0x153:
+      collectors[settingsCollectors.getCollectorIndex(SPEED)]->handle((int)(((double)(frame.data.bytes[1]) * 0.0625) * 100), status.getTimestampMicro());
+      break;
     default:
       handleOBCDCFrame(frame);
       break;
@@ -200,7 +203,7 @@ long CanBus::handleOBCDCFrame(CAN_FRAME frame)
       collectors[settingsCollectors.getCollectorIndex(DCTEMP1)]->handle(frame.data.bytes[4] - 40, ts);                         // celsius
       collectors[settingsCollectors.getCollectorIndex(DCTEMP2)]->handle(frame.data.bytes[5] - 40, ts);                         // celsius
       collectors[settingsCollectors.getCollectorIndex(DCTEMP3)]->handle(frame.data.bytes[6] - 40, ts);                         // celsius
-      collectors[settingsCollectors.getCollectorIndex(DCSTATUS)]->handle(frame.data.bytes[7], ts);                              // 0x20 standby, 0x21 error, 0x22 working
+      collectors[settingsCollectors.getCollectorIndex(DCSTATUS)]->handle(frame.data.bytes[7], ts);                             // 0x20 standby, 0x21 error, 0x22 working
       break;
     case 0x389:
       collectors[settingsCollectors.getCollectorIndex(VOLTAGE)]->handle(frame.data.bytes[0] * 2, ts);   // volts

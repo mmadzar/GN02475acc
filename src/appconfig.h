@@ -3,6 +3,8 @@
 
 #define HOST_NAME "GN02475acc"
 
+#define SPEED "speed"
+
 // DCDC converter
 #define DCVOLTAGE "dcVoltage"
 #define DCCURRENT "dcCurrent"
@@ -35,7 +37,7 @@ struct Settings
   const gpio_num_t can0_rx = (gpio_num_t)32; // can0 transciever rx line
   const gpio_num_t can0_tx = (gpio_num_t)22; // can0 transciever tx line
 
-#define CollectorCount 12
+#define CollectorCount 13
   // all 0 delay, controlled by interval of requests to charger
   CollectorConfig collectors[CollectorCount] = {
       {DCVOLTAGE, 500},     // (h04DC=12,45V -> 0,01V/bit)
@@ -49,8 +51,8 @@ struct Settings
       {SUPPLYCURRENT, 500}, // Charger Supply Current x 10
       {TEMP1, 500},         // temp x 2?
       {TEMP2, 500},         // temp x 2?
-      {EVSECTC, 500}        // EVSE Control Duty Cycle (granny cable ~26 = 26%)
-  };
+      {EVSECTC, 500},      // EVSE Control Duty Cycle (granny cable ~26 = 26%),
+      {SPEED, 200}};
 
 #define SwitchCount 8
   SwitchConfig switches[SwitchCount] = {
