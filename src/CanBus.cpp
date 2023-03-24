@@ -147,7 +147,7 @@ void CanBus::handle()
       handle613(frame);
       break;
     case 0x153:
-      collectors[settingsCollectors.getCollectorIndex(SPEED)]->handle((int)(((double)(frame.data.bytes[1]) * 0.0625) * 100), status.getTimestampMicro());
+      collectors[settingsCollectors.getCollectorIndex(SPEED)]->handle((int)((frame.data.bytes[2] * 16 + (frame.data.byte[1] >> 4 & 0x0f)) * 0.125 * 100), status.getTimestampMicro());
       break;
     default:
       handleOBCDCFrame(frame);
