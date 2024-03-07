@@ -20,11 +20,12 @@ private:
   Bytes2WiFi *b2w;
   Settings settings;
   void init();
-  CAN_device_t CAN_cfg;       // CAN Config
-  long previousMillis = 0;    // will store last time a CAN Message was send
-  long previousMillis100 = 0; // charger evse pull cp
-  long previousMillis800 = 0; // charger voltage request
-  long lastSentCanLog = 0;    // last time when logged CAN messages are sent over WiFi
+  CAN_device_t CAN_cfg;           // CAN Config
+  uint64_t previousMicros = 0;    // will store last time a CAN Message was send
+  uint64_t previousMillis100 = 0; // charger evse pull cp
+  uint64_t previousMillis800 = 0; // charger voltage request
+  long consumptionCounter = 0;
+  long lastSentCanLog = 0; // last time when logged CAN messages are sent over WiFi
   int handle613(CAN_FRAME frame);
   long handleOBCDCFrame(CAN_FRAME frame);
 

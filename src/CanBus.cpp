@@ -24,17 +24,8 @@ void CanBus::setup(class MqttPubSub &mqtt_client, Bytes2WiFi &wifiport)
   b2w = &wifiport;
 
   CAN0.begin(500000);
-  CAN0.watchFor(); // watch all - performance OK until connected clients!
-  // // BMW IKE
-  // CAN0.watchFor(0x613);
-  // // BMW DSC
-  // CAN0.watchFor(0x153); // speed  km/h
-  // CAN0.watchFor(0x1F0); // wheel speed km/h
-
-  // // CAN0.watchFor(0x545);
-  // // CAN0.watchFor(0x316);
-  // // CAN0.watchFor(0x329);
-
+  CAN0.watchFor(0x377, 0x389, 0x38a); // watch only OBDCDC charger!
+  
   // init frames for sending
   // lamps off
   CAN_FRAME txFrame1;
@@ -146,32 +137,38 @@ void CanBus::handle()
     case 0x613:
       handle613(frame);
       break;
+    case 0x153:
+      collectors[settingsCollectors.getCollectorIndex(SPEED)]->handle((int)((frame.data.bytes[2] * 16 + (frame.data.byte[1] >> 4 & 0x0f)) * 0.125 * 100), status.getTimestampMicro());
+      break;
     default:
       handleOBCDCFrame(frame);
       break;
     }
 
-    // store message to buffer
-    b2w->addBuffer(0xf1);
-    b2w->addBuffer(0x00); // 0 = canbus frame sending
-    uint64_t now = status.getTimestampMicro();
-    b2w->addBuffer(now & 0xFF);
-    b2w->addBuffer(now >> 8);
-    b2w->addBuffer(now >> 16);
-    b2w->addBuffer(now >> 24);
-    b2w->addBuffer(frame.id & 0xFF);
-    b2w->addBuffer(frame.id >> 8);
-    b2w->addBuffer(frame.id >> 16);
-    b2w->addBuffer(frame.id >> 24);
-    b2w->addBuffer(frame.length + (uint8_t)(((int)1) << 4)); // 2 ibus address
-    for (int c = 0; c < frame.length; c++)
-      b2w->addBuffer(frame.data.uint8[c]);
-    b2w->addBuffer(0x0a); // new line in serial monitor
-
-    if (status.currentMillis - lastSentCanLog >= 100)
+    if (status.wifiCan == 1)
     {
-      lastSentCanLog = status.currentMillis;
-      b2w->send();
+      // store message to buffer
+      b2w->addBuffer(0xf1);
+      b2w->addBuffer(0x00); // 0 = canbus frame sending
+      uint64_t now = status.getTimestampMicro();
+      b2w->addBuffer(now & 0xFF);
+      b2w->addBuffer(now >> 8);
+      b2w->addBuffer(now >> 16);
+      b2w->addBuffer(now >> 24);
+      b2w->addBuffer(frame.id & 0xFF);
+      b2w->addBuffer(frame.id >> 8);
+      b2w->addBuffer(frame.id >> 16);
+      b2w->addBuffer(frame.id >> 24);
+      b2w->addBuffer(frame.length + (uint8_t)(((int)1) << 4)); // 2 ibus address
+      for (int c = 0; c < frame.length; c++)
+        b2w->addBuffer(frame.data.uint8[c]);
+      b2w->addBuffer(0x0a); // new line in serial monitor
+
+      if (status.currentMillis - lastSentCanLog >= 50)
+      {
+        lastSentCanLog = status.currentMillis;
+        b2w->send();
+      }
     }
   }
 }
@@ -200,7 +197,7 @@ long CanBus::handleOBCDCFrame(CAN_FRAME frame)
       collectors[settingsCollectors.getCollectorIndex(DCTEMP1)]->handle(frame.data.bytes[4] - 40, ts);                         // celsius
       collectors[settingsCollectors.getCollectorIndex(DCTEMP2)]->handle(frame.data.bytes[5] - 40, ts);                         // celsius
       collectors[settingsCollectors.getCollectorIndex(DCTEMP3)]->handle(frame.data.bytes[6] - 40, ts);                         // celsius
-      collectors[settingsCollectors.getCollectorIndex(DCSTATUS)]->handle(frame.data.bytes[7], ts);                              // 0x20 standby, 0x21 error, 0x22 working
+      collectors[settingsCollectors.getCollectorIndex(DCSTATUS)]->handle(frame.data.bytes[7], ts);                             // 0x20 standby, 0x21 error, 0x22 working
       break;
     case 0x389:
       collectors[settingsCollectors.getCollectorIndex(VOLTAGE)]->handle(frame.data.bytes[0] * 2, ts);   // volts
@@ -208,8 +205,16 @@ long CanBus::handleOBCDCFrame(CAN_FRAME frame)
       collectors[settingsCollectors.getCollectorIndex(SUPPLYCURRENT)]->handle(frame.data.bytes[2], ts); // deciamps
       collectors[settingsCollectors.getCollectorIndex(TEMP1)]->handle(frame.data.bytes[3] - 40, ts);    // celsius
       collectors[settingsCollectors.getCollectorIndex(TEMP2)]->handle(frame.data.bytes[4] - 40, ts);    // celsius
+      // collectors[settingsCollectors.getCollectorIndex(AC_PRESENT)]->handle(frame.data.bytes[4] - 40, ts);
+      // collectors[settingsCollectors.getCollectorIndex(CHARGING)]->handle(frame.data.bytes[4] - 40, ts);
+      // collectors[settingsCollectors.getCollectorIndex(ERROR)]->handle(frame.data.bytes[4] - 40, ts);
+      // collectors[settingsCollectors.getCollectorIndex(DCDC_REQUEST)]->handle(frame.data.bytes[4] - 40, ts);
+      // collectors[settingsCollectors.getCollectorIndex(PILOT)]->handle(frame.data.bytes[4] - 40, ts);
       break;
     case 0x38A:
+      collectors[settingsCollectors.getCollectorIndex(TEMP3)]->handle(frame.data.bytes[0] - 45, ts); // celsius
+      collectors[settingsCollectors.getCollectorIndex(TEMP4)]->handle(frame.data.bytes[1] - 40, ts); // celsius
+      collectors[settingsCollectors.getCollectorIndex(DCBUSVOLTAGE)]->handle(frame.data.bytes[2], ts);
       collectors[settingsCollectors.getCollectorIndex(EVSECTC)]->handle(frame.data.bytes[3], ts); // pwm %
     default:
       break;
@@ -221,10 +226,16 @@ long CanBus::handleOBCDCFrame(CAN_FRAME frame)
 
 void CanBus::sendMessageSet()
 {
+  uint64_t ts = status.getTimestampMicro();
+  status.currentMillis = millis();
   // IKE - create and send can message in intervals
-  if (status.currentMillis - previousMillis >= intervals.CANsend)
+  if (ts - previousMicros >= (intervals.CANsend - 1))
   {
-    previousMillis = status.currentMillis;
+    previousMicros = ts;
+
+    consumptionCounter += 45;
+    if (consumptionCounter >= 65534)
+      consumptionCounter = 0;
 
     // update rpm and coolant temp values
     displayValue = status.rpm * 6.4;
@@ -233,13 +244,16 @@ void CanBus::sendMessageSet()
     displayValue = status.coolant_temp * 2;
     frames[2].data.uint8[1] = (int)((displayValue & 0X000000FF));
 
+    frames[0].data.uint8[1] = (int)((consumptionCounter & 0X000000FF));      // consumption counter 0,2
+    frames[0].data.uint8[2] = (int)((consumptionCounter & 0x0000FF00) >> 8); // consumption counter 2,4
+
     CAN0.sendFrame(frames[0]);
     CAN0.sendFrame(frames[1]);
     CAN0.sendFrame(frames[2]);
   }
 
   // always send 0x285 as BMS hear beat
-  if (status.currentMillis - previousMillis100 >= 30)
+  if (status.currentMillis - previousMillis100 >= 25)
   {
     previousMillis100 = status.currentMillis;
     if (status.chargerPullEVSE == 1)
@@ -250,7 +264,7 @@ void CanBus::sendMessageSet()
     CAN0.sendFrame(frames[3]);
   }
 
-  if (status.chargerStarted == 1 && status.currentMillis - previousMillis800 >= 500)
+  if (status.chargerStarted == 1 && status.currentMillis - previousMillis800 >= 470)
   {
     previousMillis800 = status.currentMillis;
     frames[4].data.uint8[0] = (int)((status.chargerVoltageRequest & 0X000000FF));      // voltage*10 big endian

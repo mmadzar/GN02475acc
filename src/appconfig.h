@@ -3,6 +3,8 @@
 
 #define HOST_NAME "GN02475acc"
 
+#define SPEED "speed"
+
 // DCDC converter
 #define DCVOLTAGE "dcVoltage"
 #define DCCURRENT "dcCurrent"
@@ -17,6 +19,9 @@
 #define SUPPLYCURRENT "supplyCurrent"
 #define TEMP1 "temp1"
 #define TEMP2 "temp2"
+#define TEMP3 "temp3"
+#define TEMP4 "temp4"
+#define DCBUSVOLTAGE "dcBusVoltage"
 #define EVSECTC "evseCTC"
 
 // mosfets
@@ -29,28 +34,31 @@
 struct Settings
 {
 #define ListenChannelsCount 1
-  const char *listenChannels[ListenChannelsCount] = {"GN02475inv/out/#"};
+  const char *listenChannels[ListenChannelsCount] = {"GN02475inv/out/collectors/rpm"};
 
   const gpio_num_t led = (gpio_num_t)2;      // status led
   const gpio_num_t can0_rx = (gpio_num_t)32; // can0 transciever rx line
   const gpio_num_t can0_tx = (gpio_num_t)22; // can0 transciever tx line
 
-#define CollectorCount 12
+#define CollectorCount 16
   // all 0 delay, controlled by interval of requests to charger
   CollectorConfig collectors[CollectorCount] = {
-      {DCVOLTAGE, 500},     // (h04DC=12,45V -> 0,01V/bit)
-      {DCCURRENT, 500},     // (H53=8,3A -> 0,1A/bit)
-      {DCTEMP1, 500},       // (starts at -40degC, +1degC/bit)
-      {DCTEMP2, 500},       // (starts at -40degC, +1degC/bit)
-      {DCTEMP3, 500},       // (starts at -40degC, +1degC/bit)
-      {DCSTATUS, 500},      // (h20=standby, h21=error, h22=in operation)
-      {VOLTAGE, 500},       // Battery Voltage (as seen by the charger), needs to be scaled x 2, so can represent up to 255*2V; used to monitor battery during charge
-      {SUPPLYVOLTAGE, 500}, // Charger supply voltage, no scaling needed
-      {SUPPLYCURRENT, 500}, // Charger Supply Current x 10
-      {TEMP1, 500},         // temp x 2?
-      {TEMP2, 500},         // temp x 2?
-      {EVSECTC, 500}        // EVSE Control Duty Cycle (granny cable ~26 = 26%)
-  };
+      {DCVOLTAGE, 0},     // (h04DC=12,45V -> 0,01V/bit)
+      {DCCURRENT, 0},     // (H53=8,3A -> 0,1A/bit)
+      {DCTEMP1, 0},       // (starts at -40degC, +1degC/bit)
+      {DCTEMP2, 0},       // (starts at -40degC, +1degC/bit)
+      {DCTEMP3, 0},       // (starts at -40degC, +1degC/bit)
+      {DCSTATUS, 0},      // (h20=standby, h21=error, h22=in operation)
+      {VOLTAGE, 0},       // Battery Voltage (as seen by the charger), needs to be scaled x 2, so can represent up to 255*2V; used to monitor battery during charge
+      {SUPPLYVOLTAGE, 0}, // Charger supply voltage, no scaling needed
+      {SUPPLYCURRENT, 0}, // Charger Supply Current x 10
+      {TEMP1, 0},         // temp x 2?
+      {TEMP2, 0},         // temp x 2?
+      {TEMP3, 0},         
+      {TEMP4, 0},         
+      {EVSECTC, 0},      // EVSE Control Duty Cycle (granny cable ~26 = 26%),
+      {DCBUSVOLTAGE, 0},
+      {SPEED, 0}};
 
 #define SwitchCount 8
   SwitchConfig switches[SwitchCount] = {
@@ -111,7 +119,7 @@ struct Intervals
 {
   int statusPublish = 1000;     // interval at which status is published to MQTT
   int Can2Mqtt = 1000;          // send CAN messages to MQTT every n secconds. Accumulate messages until. Set this to 0 for forwarding all CAN messages to MQTT as they are received.
-  int CANsend = 10;             // interval at which to send CAN Messages to car bus network (milliseconds)
+  int CANsend = 20000;          // interval at which to send CAN Messages to car bus network (microseconds)
   int outChannelsPublish = 500; // interval at which status is published to MQTT out channels
   int click_onceDelay = 1000;   // milliseconds
 };
@@ -119,7 +127,7 @@ struct Intervals
 struct BrakesSettings
 {
   uint8_t manual_vacuum = 0;
-  uint16_t vacuum_min = 2519; // ADC value - turn pump on cca 1.7V
+  uint16_t vacuum_min = 2319; // ADC value - turn pump on
   uint16_t vacuum_max = 1450; // ADC value - turn pump off cca 1.4V
 };
 

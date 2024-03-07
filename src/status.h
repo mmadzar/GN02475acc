@@ -10,7 +10,7 @@ public:
   int rpm = 600; // minimum value to keep DSC working
   int coolant_temp = 90;
   int ikeFuelLevel = -1;
-
+  int wifiCan = 0;
   int chargerStarted = 0;
   int chargerPullEVSE = 0;
   int chargerVoltageRequest = 3350;
@@ -25,6 +25,7 @@ public:
   {
 
     JsonObject root = this->PrepareRoot();
+    root["wifiCan"] = wifiCan;
 
     JsonObject jbrakes = root.createNestedObject("brakes");
     jbrakes["manual_vacuum"] = brakesSettings.manual_vacuum;
@@ -41,7 +42,6 @@ public:
     jcharger["voltage_request"] = chargerVoltageRequest;
     jcharger["current_request"] = chargerCurrentRequest;
     jcharger["pull_evse"] = chargerPullEVSE;
-
 
     JsonObject jcollectors = root.createNestedObject("collectors");
     for (size_t i = 0; i < CollectorCount; i++)

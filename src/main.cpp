@@ -52,8 +52,8 @@ void loop()
   if (status.currentMillis - lastLoopReport > 1000) // number of loops in 1 second - for performance measurement
   {
     lastLoopReport = status.currentMillis;
-    Serial.print("Loops in a second: ");
-    Serial.println(loops);
+    // Serial.print("Loops in a second: ");
+    // Serial.println(loops);
     status.loops = loops;
     loops = 0;
   }
@@ -62,8 +62,8 @@ void loop()
     loops++;
   }
 
-  can.handle();
   can.sendMessageSet();
+  can.handle();
 
   sensors.handle();
   pwmCtrl.handle();

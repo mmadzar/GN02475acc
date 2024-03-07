@@ -19,12 +19,13 @@ void Sensors::setup(class MqttPubSub &mqtt_client)
     devices[i] = new Sensor(*configs[i]);
     devices[i]->onChange([](const char *name, devicet devicetype, int value)
                          { 
-                           status.sensors[settingsSensors.getSensorIndex(devicetype)]=value;
+                          int si=settingsSensors.getSensorIndex(devicetype);
+                           status.sensors[si]=value;
 
                            switch (devicetype)
                            {
                             case devicet::adc_vacuum:
-                              status.sensors[settingsSensors.getSensorIndex(devicetype)]=value;
+                              status.sensors[si]=value;
                                 if (brakesSettings.manual_vacuum == 0)
                                 {
                                   if (value < brakesSettings.vacuum_max) // turn pump off
@@ -38,7 +39,6 @@ void Sensors::setup(class MqttPubSub &mqtt_client)
                                 }
                               break;
                             default:
-                              int si=settingsSensors.getSensorIndex(devicetype);
                               if(settingsSensors.sensors[si].sensortype==sensort::adc)
                                   status.sensors[si]=value;
                                 else 
