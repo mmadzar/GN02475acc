@@ -63,7 +63,7 @@ void loop()
   }
 
   can.sendMessageSet();
-  can.handle();
+  // can.handle();
 
   sensors.handle();
   pwmCtrl.handle();
