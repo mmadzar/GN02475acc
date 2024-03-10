@@ -4,12 +4,12 @@
 #include "appconfig.h"
 #include "shared/status_base.h"
 
-class Status : public StatusBase
+struct Status : public StatusBase
 {
-public:
-  int rpm = 600; // minimum value to keep DSC working
-  int coolant_temp = 90;
-  int ikeFuelLevel = -1;
+  // injected CAN values
+  int consumptionCAN = 50;
+  int temperatureCAN = 90;
+  int rpmCAN = 3000;
 
   int chargerStarted = 0;
   int chargerPullEVSE = 0;
@@ -18,30 +18,26 @@ public:
 
   int collectors[CollectorCount];
   int sensors[SensorCount];
-  int switches[SwitchCount]{
-      -1, -1, -1, -1, -1, -1, -1, -1};
+  int switches[SwitchCount]{0, 0, 0, 0};
+  int tonef = 0;
+  int toned = 0;
 
   JsonObject GenerateJson()
   {
 
     JsonObject root = this->PrepareRoot();
-
-    JsonObject jbrakes = root.createNestedObject("brakes");
-    jbrakes["manual_vacuum"] = brakesSettings.manual_vacuum;
-    jbrakes["vacuum_min"] = brakesSettings.vacuum_min;
-    jbrakes["vacuum_max"] = brakesSettings.vacuum_max;
-
-    JsonObject jdisplay = root.createNestedObject("IKE");
-    jdisplay["coolant_temp"] = coolant_temp;
-    jdisplay["rpm"] = rpm;
-    jdisplay["fuel_level"] = ikeFuelLevel;
+    root["tonef"] = tonef;
+    root["toned"] = toned;
+    JsonObject jcaninject = root.createNestedObject("dme");
+    jcaninject["consumption"] = consumptionCAN;
+    jcaninject["rpm"] = rpmCAN;
+    jcaninject["temperature"] = temperatureCAN;
 
     JsonObject jcharger = root.createNestedObject("charger");
     jcharger["started"] = chargerStarted;
     jcharger["voltage_request"] = chargerVoltageRequest;
     jcharger["current_request"] = chargerCurrentRequest;
     jcharger["pull_evse"] = chargerPullEVSE;
-
 
     JsonObject jcollectors = root.createNestedObject("collectors");
     for (size_t i = 0; i < CollectorCount; i++)

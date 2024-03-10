@@ -4,13 +4,15 @@
 #include <Arduino.h>
 #include "shared/base/Collector.h"
 #include "shared/configtypes/configtypes.h"
-#include <esp32_can.h>
-#include <CAN_config.h>
+#include <mcp_can.h>
+#include <SPI.h>
 #include "appconfig.h"
 #include <ArduinoJson.h>
 #include "status.h"
 #include "shared/Bytes2WiFi.h"
 #include "shared/MqttPubSub.h"
+#define CAN0_INT 17 // Set INT pin
+#define CAN0_CS 5   // Set CS pin
 
 class CanBus
 {
@@ -20,13 +22,11 @@ private:
   Bytes2WiFi *b2w;
   Settings settings;
   void init();
-  CAN_device_t CAN_cfg;       // CAN Config
-  long previousMillis = 0;    // will store last time a CAN Message was send
-  long previousMillis100 = 0; // charger evse pull cp
-  long previousMillis800 = 0; // charger voltage request
-  long lastSentCanLog = 0;    // last time when logged CAN messages are sent over WiFi
-  int handle613(CAN_FRAME frame);
-  long handleOBCDCFrame(CAN_FRAME frame);
+  uint64_t previousDme = 0;      // will store last time a CAN Message was send
+  uint64_t previousChargerS = 0; // charger evse pull cp
+  uint64_t previousChargerL = 0; // charger voltage request
+  long consumptionCounter = 0;
+  long lastSentCanLog = 0; // last time when logged CAN messages are sent over WiFi
 
 public:
   CanBus();

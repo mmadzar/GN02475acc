@@ -7,6 +7,10 @@
         "*.css.liquid": "liquid-css",
         "*.scss.liquid": "liquid-scss",
         "*.liquid": "csharp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "cstddef": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp"
     }
 }

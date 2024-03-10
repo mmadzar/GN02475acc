@@ -19,33 +19,18 @@ void Sensors::setup(class MqttPubSub &mqtt_client)
     devices[i] = new Sensor(*configs[i]);
     devices[i]->onChange([](const char *name, devicet devicetype, int value)
                          { 
-                           status.sensors[settingsSensors.getSensorIndex(devicetype)]=value;
-
-                           switch (devicetype)
-                           {
-                            case devicet::adc_vacuum:
-                              status.sensors[settingsSensors.getSensorIndex(devicetype)]=value;
-                                if (brakesSettings.manual_vacuum == 0)
-                                {
-                                  if (value < brakesSettings.vacuum_max) // turn pump off
-                                  {
-                                    status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=LOW;
-                                  }
-                                  else if (value > brakesSettings.vacuum_min) // turn pump on
-                                  {
-                                    status.switches[settingsSensors.getSwitchIndex(devicet::msft_vacuum)]=HIGH;
-                                  }
-                                }
-                              break;
-                            default:
-                              int si=settingsSensors.getSensorIndex(devicetype);
-                              if(settingsSensors.sensors[si].sensortype==sensort::adc)
-                                  status.sensors[si]=value;
-                                else 
-                                  status.sensors[si]=value/100.0;
-                              break;
-                           }
-                          mqttClientSensors->sendMessageToTopic(String(value), String(wifiSettings.hostname) + "/out/sensors/" + name); });
+                          int si=settingsSensors.getSensorIndex(name);
+                          bool changed=status.sensors[si]!=value;
+                          status.sensors[si]=value;
+                          if(changed)
+                          {
+                            mqttClientSensors->sendMessageToTopic(String(value), String(wifiSettings.hostname) + "/out/sensors/" + name); 
+                            if(strcmp(name, BUTTON1)==0 && value ==0)
+                              status.chargerStarted = 0;
+                            if(strcmp(name, BUTTON2)==0 && value ==0)
+                              status.chargerStarted = 1;
+                          }
+                        });
     devices[i]->setup();
   }
 }

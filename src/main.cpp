@@ -14,11 +14,10 @@ Status status;
 Settings pins;
 Intervals intervals;
 WiFiSettings wifiSettings;
-BrakesSettings brakesSettings;
 WiFiOTA wota;
 MqttPubSub mqtt;
-Switches pwmCtrl;
-Sensors sensors;
+Switches relays;
+Sensors buttons;
 Bytes2WiFi bytesWiFi;
 CanBus can;
 
@@ -33,12 +32,9 @@ int lastVacuumRead = 0;
 void setup()
 {
   SETTINGS.loadSettings();
-  pwmCtrl.setup(mqtt);
-  sensors.setup(mqtt);
+  relays.setup(mqtt);
+  buttons.setup(mqtt);
   pinMode(pins.led, OUTPUT);
-  Serial.begin(115200);
-  // delay(500);
-  Serial.println("Serial started!");
   wota.setupWiFi();
   wota.setupOTA();
   mqtt.setup();
@@ -52,21 +48,30 @@ void loop()
   if (status.currentMillis - lastLoopReport > 1000) // number of loops in 1 second - for performance measurement
   {
     lastLoopReport = status.currentMillis;
-    Serial.print("Loops in a second: ");
-    Serial.println(loops);
+    // Serial.print("Loops in a second: ");
+    // Serial.println(loops);
     status.loops = loops;
     loops = 0;
+    if (status.timeinfo.tm_year == 70)
+    {
+      getLocalTime(&(status.timeinfo), 10);
+      if (status.timeinfo.tm_year != 70)
+      {
+        strftime(status.upsince, sizeof(status.upsince), "%Y-%m-%d %H:%M:%S UTC", &(status.timeinfo));
+        strftime(status.connectedsince, sizeof(status.connectedsince), "%Y-%m-%d %H:%M:%S UTC", &(status.timeinfo));
+      }
+    }
   }
   else
   {
     loops++;
   }
 
-  can.handle();
   can.sendMessageSet();
+  can.handle();
 
-  sensors.handle();
-  pwmCtrl.handle();
+  relays.handle();
+  buttons.handle();
 
   wota.handleWiFi();
   wota.handleOTA();

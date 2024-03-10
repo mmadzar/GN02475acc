@@ -3,24 +3,18 @@
 #include "status.h"
 #include "MqttMessageHandler.h"
 
-static StaticJsonDocument<1024> mhdoc;
-
 MqttMessageHandler::MqttMessageHandler()
 {
 }
 
 void MqttMessageHandler::HandleMessage(const char *command, const char *message, int length)
 {
-  if (strcmp(command, "coolant_temp") == 0)
-    status.coolant_temp = String(message).toInt();
-  else if (strcmp(command, "rpm") == 0)
-    status.rpm = String(message).toInt();
-  else if (strcmp(command, "vacuum_min") == 0)
-    brakesSettings.vacuum_min = String(message).toInt();
-  else if (strcmp(command, "vacuum_max") == 0)
-    brakesSettings.vacuum_max = String(message).toInt();
-  else if (strcmp(command, "manual_vacuum") == 0)
-    brakesSettings.manual_vacuum = String(message).toInt();
+  if (strcmp(command, "dme_temperature") == 0)
+    status.temperatureCAN = String(message).toInt();
+  else if (strcmp(command, "dme_rpm") == 0)
+    status.rpmCAN = String(message).toInt();
+  else if (strcmp(command, "dme_consumption") == 0)
+    status.consumptionCAN = String(message).toInt();
   else if (strcmp(command, "charger_voltage_request") == 0)
     status.chargerVoltageRequest = String(message).toInt();
   else if (strcmp(command, "charger_current_request") == 0)
@@ -29,43 +23,24 @@ void MqttMessageHandler::HandleMessage(const char *command, const char *message,
     status.chargerStarted = String(message).toInt();
   else if (strcmp(command, "charger_pull_evse") == 0)
     status.chargerPullEVSE = String(message).toInt();
+  else if (strcmp(command, "tone") == 0)
+  {
+    String pload = String(message);
+    // status.tonef = pload.substring(0, pload.indexOf(" ")).toInt();
+    // status.toned = pload.substring(pload.indexOf(" ") + 1).toInt();
+    // tone(settings.buzzer, status.tonef, status.toned);
+    tone(settings.buzzer, pload.substring(0, pload.indexOf(" ")).toInt(), pload.substring(pload.indexOf(" ") + 1).toInt());
+  }
   else
   {
-    for (size_t i = 0; i < SwitchCount; i++)
-    {
-      SwitchConfig *sc = &settings.switches[i];
-      // find switch in settings and set status value by index
-      if (strcmp(sc->name, command) == 0)
-      {
-        status.switches[i] = String(message).toInt();
-        break;
-      }
-    }
+    int s = settings.getSwitchIndex(command);
+    if (s >= 0)
+      status.switches[s] = String(message).toInt();
   }
 }
 
 void MqttMessageHandler::callback(char *topic, byte *message, unsigned int length)
 {
-  char msg[length + 1];
-  for (size_t i = 0; i < length; i++)
-    msg[i] = (char)message[i];
-  msg[length] = 0x0a;
-
-  String t = String(topic);
-  String cmd = t.substring(String("GN02475inv/out/").length(), t.length());
-  if (length > 0)
-  {
-    if (cmd.equals("collectors/rpm"))
-    {
-      deserializeJson(mhdoc, message);
-      status.rpm = mhdoc["max"];
-    }
-    if (status.rpm < 600)
-      status.rpm = 600;
-    // else if (cmd.equals("inverter/pot")) // for testing responsivnes
-    //   status.rpm = String((const char *)message).toInt();
-    // Serial.println(cmd);
-  }
 }
 
 void MqttMessageHandler::handle()
