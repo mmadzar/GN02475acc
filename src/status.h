@@ -26,22 +26,17 @@ struct Status : public StatusBase
   {
 
     JsonObject root = this->PrepareRoot();
-    root["tonef"] = tonef;
-    root["toned"] = toned;
-    JsonObject jcaninject = root.createNestedObject("dme");
-    jcaninject["consumption"] = consumptionCAN;
-    jcaninject["rpm"] = rpmCAN;
-    jcaninject["temperature"] = temperatureCAN;
-
-    JsonObject jcharger = root.createNestedObject("charger");
-    jcharger["started"] = chargerStarted;
-    jcharger["voltage_request"] = chargerVoltageRequest;
-    jcharger["current_request"] = chargerCurrentRequest;
-    jcharger["pull_evse"] = chargerPullEVSE;
 
     JsonObject jcollectors = root.createNestedObject("collectors");
-    for (size_t i = 0; i < CollectorCount; i++)
-      jcollectors[settings.collectors[i].name] = collectors[i];
+    jcollectors["tonef"] = tonef;
+    jcollectors["toned"] = toned;
+    jcollectors["consumption"] = consumptionCAN;
+    jcollectors["rpm"] = rpmCAN;
+    jcollectors["temperature"] = temperatureCAN;
+    jcollectors["started"] = chargerStarted;
+    jcollectors["voltage_request"] = chargerVoltageRequest;
+    jcollectors["current_request"] = chargerCurrentRequest;
+    jcollectors["pull_evse"] = chargerPullEVSE;
 
     JsonObject jsensors = root.createNestedObject("sensors");
     for (size_t i = 0; i < SensorCount; i++)
